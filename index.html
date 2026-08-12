@@ -646,26 +646,13 @@
         document.getElementById('btnYes').addEventListener('click', () => goToStep(1));
 
         // ---------- wheel picker de data ----------
-const hoje = new Date();
-const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-const ITEM_H = 44;
+        const hoje = new Date();
+        const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ITEM_H = 44;
 
-// Ano fixo
-const ANO_FIXO = 2026;
-
-// Data mínima: hoje
-const mesMinimo = hoje.getMonth();
-const diaMinimo = hoje.getDate();
-
-let selDay = diaMinimo;
-let selMonth = mesMinimo;
-let selYear = ANO_FIXO;
-
-// Somente meses a partir do mês atual
-const mesesDisponiveis = MESES.slice(mesMinimo);
-
-// Somente o ano 2026
-const anos = [ANO_FIXO];
+        let selDay = hoje.getDate();
+        let selMonth = hoje.getMonth(); // 0-11
+        let selYear = hoje.getFullYear();
 
         function diasNoMes(mesIndex, ano) {
             return new Date(ano, mesIndex + 1, 0).getDate();
@@ -717,67 +704,16 @@ const anos = [ANO_FIXO];
 
         const anos = [2026];
 
-function rebuildDayWheel() {
-    const max = diasNoMes(selMonth, selYear);
-
-    // Se for o mês atual, começa no dia de hoje.
-    // Nos meses seguintes, começa no dia 1.
-    const primeiroDia = (selYear === ANO_FIXO && selMonth === mesMinimo)
-        ? diaMinimo
-        : 1;
-
-    // Garante que o dia selecionado nunca fique antes do permitido
-    if (selDay < primeiroDia) selDay = primeiroDia;
-    if (selDay > max) selDay = max;
-
-    const dias = Array.from(
-        { length: max - primeiroDia + 1 },
-        (_, i) => String(primeiroDia + i)
-    );
-
-    montarWheel(
-        wheelDayEl,
-        dias,
-        selDay - primeiroDia,
-        (i) => {
-            selDay = primeiroDia + i;
-        }
-    );
-}
-
-// Mostra somente os meses a partir do mês atual
-montarWheel(
-    wheelMonthEl,
-    mesesDisponiveis,
-    0,
-    (i) => {
-        selMonth = mesMinimo + i;
-
-        // Ao mudar para um mês futuro, começa no dia 1
-        if (selMonth !== mesMinimo) {
-            selDay = 1;
-        } else {
-            selDay = diaMinimo;
+        function rebuildDayWheel() {
+            const max = diasNoMes(selMonth, selYear);
+            if (selDay > max) selDay = max;
+            const dias = Array.from({ length: max }, (_, i) => String(i + 1));
+            montarWheel(wheelDayEl, dias, selDay - 1, (i) => { selDay = i + 1; });
         }
 
+        montarWheel(wheelMonthEl, MESES, selMonth, (i) => { selMonth = i; rebuildDayWheel(); });
+        montarWheel(wheelYearEl, anos.map(String), 0, (i) => { selYear = anos[i]; rebuildDayWheel(); });
         rebuildDayWheel();
-    }
-);
-
-// Ano fixo em 2026
-montarWheel(
-    wheelYearEl,
-    anos.map(String),
-    0,
-    () => {
-        selYear = ANO_FIXO;
-        rebuildDayWheel();
-    }
-);
-
-rebuildDayWheel();
-    }
-);
 
         document.getElementById('btnDateNext').addEventListener('click', () => goToStep(2));
 
