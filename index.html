@@ -439,6 +439,54 @@
             margin-top: 6px;
         }
 
+        /* ===== Tela final: status + progresso ===== */
+        .status-screen {
+            position: relative;
+            overflow: hidden;
+            padding-top: 20px;
+        }
+
+        .status-screen h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .status-screen .summary {
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-family: 'Caveat', cursive;
+            font-size: 20px;
+            color: var(--wine);
+            margin: 0;
+            min-height: 28px;
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .status-text.change {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        .progress-wrap {
+            width: min(270px, 82vw);
+            height: 6px;
+            margin: 18px auto 0;
+            border-radius: 999px;
+            background: rgba(126, 22, 54, .12);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #8d173f, #e23b67);
+            box-shadow: 0 0 10px rgba(187, 30, 75, .35);
+            transition: width .9s ease;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .floaties {
                 display: none;
@@ -565,13 +613,16 @@
                 </div>
             </div>
 
-            <!-- STEP 4: fim -->
+            <!-- STEP 4: status / encaminhamento -->
             <div class="step" id="step-done" hidden>
-                <div class="done">
-                    <h1>Está marcado!</h1>
+                <div class="done status-screen">
+                    <h1 id="statusTitle">Aguarde...</h1>
                     <div class="summary" id="summaryText"></div>
-                    <button class="wa-btn" id="btnContinuar">Continuar</button>
-                    <p class="redirect-msg" id="redirectMsg">te levando pra lá&nbsp;🌹</p>
+                    <p class="status-text" id="statusText">preparando tudo com carinho 🌹</p>
+
+                    <div class="progress-wrap" aria-hidden="true">
+                        <div class="progress-bar" id="statusProgress"></div>
+                    </div>
                 </div>
             </div>
 
@@ -893,6 +944,7 @@
             montarResumoFinal();
             goToStep(3);
             dispararConfete();
+            iniciarEncaminhamento();
         });
 
         // ---------- resumo final + link WhatsApp ----------
@@ -907,18 +959,58 @@
             window.__waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
         }
 
-        document.getElementById('btnContinuar').addEventListener('click', (e) => {
-            const btn = e.currentTarget;
-            if (btn.disabled) return;
-            btn.disabled = true;
-            btn.classList.add('loading');
-            btn.textContent = 'Só um instante...';
-            document.getElementById('redirectMsg').classList.add('show');
+        // ---------- fluxo final automático ----------
+        function iniciarEncaminhamento() {
+            const statusTitle = document.getElementById('statusTitle');
+            const statusText = document.getElementById('statusText');
+
+            const etapas = [
+                {
+                    tempo: 0,
+                    titulo: 'Aguarde...',
+                    texto: 'preparando tudo com carinho 🌹'
+                },
+                {
+                    tempo: 1000,
+                    titulo: 'Encaminhando...',
+                    texto: 'a rosa está levando seu recado 🌸'
+                },
+                {
+                    tempo: 2000,
+                    titulo: 'Quase pronto...',
+                    texto: 'só mais um pouquinho... 💕'
+                },
+                {
+                    tempo: 3000,
+                    titulo: 'Pronto! 🌹',
+                    texto: 'te levando para o WhatsApp...'
+                }
+            ];
+
+            etapas.forEach((etapa, index) => {
+                setTimeout(() => {
+                    statusTitle.textContent = etapa.titulo;
+
+                    statusText.classList.add('change');
+
+                    const progress = document.getElementById('statusProgress');
+                    if (progress) {
+                        progress.style.width = `${Math.min(100, index * 33.333)}%`;
+                    }
+
+                    setTimeout(() => {
+                        statusText.textContent = etapa.texto;
+                        statusText.classList.remove('change');
+                    }, 180);
+                }, etapa.tempo);
+            });
 
             setTimeout(() => {
+                const progress = document.getElementById('statusProgress');
+                if (progress) progress.style.width = '100%';
                 window.location.href = window.__waUrl;
-            }, 1400);
-        });
+            }, 3300);
+        }
 
         function dispararConfete() {
             for (let i = 0; i < 16; i++) {
