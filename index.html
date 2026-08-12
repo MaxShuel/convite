@@ -650,14 +650,13 @@
         const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const ITEM_H = 44;
 
-        // Ano continua fixo em 2026
+        // Ano permanece fixo em 2026
         const ANO_FIXO = 2026;
 
-        // Data atual do sistema
-        const mesAtual = hoje.getMonth(); // 0 = Janeiro
+        // Data de hoje detectada automaticamente pelo navegador
+        const mesAtual = hoje.getMonth();
         const diaAtual = hoje.getDate();
 
-        // Seleção inicial começa no dia de hoje
         let selDay = diaAtual;
         let selMonth = mesAtual;
         let selYear = ANO_FIXO;
@@ -684,14 +683,13 @@
             padBottom.className = 'wheel-pad';
             container.appendChild(padBottom);
 
-            // posiciona no item selecionado
-            container.scrollTop = selectedIndex * ITEM_H;
+            const index = Math.max(0, Math.min(items.length - 1, selectedIndex));
+            container.scrollTop = index * ITEM_H;
 
             let scrollTimeout;
 
             container.addEventListener('scroll', () => {
                 clearTimeout(scrollTimeout);
-
                 updateCenter(container);
 
                 scrollTimeout = setTimeout(() => {
@@ -724,77 +722,91 @@
         const wheelMonthEl = document.getElementById('wheelMonth');
         const wheelYearEl = document.getElementById('wheelYear');
 
-        const anos = [ANO_FIXO];
+        const anos = [2026];
 
+        // Mostra somente os meses que ainda podem ser escolhidos
         function montarMesesDisponiveis() {
-            // Mostra somente o mês atual em diante
             const mesesDisponiveis = MESES.slice(mesAtual);
 
             montarWheel(
                 wheelMonthEl,
                 mesesDisponiveis,
                 selMonth - mesAtual,
-                (i) => {
-                    selMonth = mesAtual + i;
-
-                    // No mês atual, não permite dias anteriores a hoje.
-                    // Nos meses futuros, a seleção pode começar no dia 1.
-                    if (selMonth === mesAtual && selDay < diaAtual) {
-                        selDay = diaAtual;
-                    }
-
+                (indice) => {
+                    selMonth = mesAtual + indice;
+                    corrigirDia();
                     rebuildDayWheel();
                 }
             );
         }
 
+        // No mês atual, começa no dia de hoje.
+        // Nos meses seguintes, começa no dia 1.
+        function primeiroDiaPermitido() {
+            return selMonth === mesAtual ? diaAtual : 1;
+        }
+
+        function corrigirDia() {
+            const primeiroDia = primeiroDiaPermitido();
+            const max = diasNoMes(selMonth, ANO_FIXO);
+
+            if (selDay < primeiroDia) selDay = primeiroDia;
+            if (selDay > max) selDay = max;
+        }
+
         function rebuildDayWheel() {
-            const max = diasNoMes(selMonth, selYear);
+            corrigirDia();
 
-            // Mês atual: começa no dia de hoje.
-            // Meses futuros: começam no dia 1.
-            const primeiroDia = selMonth === mesAtual ? diaAtual : 1;
+            const primeiroDia = primeiroDiaPermitido();
+            const max = diasNoMes(selMonth, ANO_FIXO);
 
-            // Garante que o dia selecionado nunca fique antes do permitido.
-            if (selDay < primeiroDia) {
-                selDay = primeiroDia;
+            const dias = [];
+            for (let dia = primeiroDia; dia <= max; dia++) {
+                dias.push(String(dia));
             }
-
-            // Garante que não passe do último dia do mês.
-            if (selDay > max) {
-                selDay = max;
-            }
-
-            const dias = Array.from(
-                { length: max - primeiroDia + 1 },
-                (_, i) => String(primeiroDia + i)
-            );
 
             montarWheel(
                 wheelDayEl,
                 dias,
                 selDay - primeiroDia,
-                (i) => {
-                    selDay = primeiroDia + i;
+                (indice) => {
+                    selDay = primeiroDia + indice;
                 }
             );
         }
 
+        // Inicializa mês, ano e dia
         montarMesesDisponiveis();
 
         montarWheel(
             wheelYearEl,
             anos.map(String),
             0,
-            (i) => {
-                selYear = anos[i];
+            (indice) => {
+                selYear = anos[indice];
+                corrigirDia();
                 rebuildDayWheel();
             }
         );
 
         rebuildDayWheel();
 
-        document.getElementById('btnDateNext').addEventListener('click', () => goToStep(2));
+        // Última proteção: nunca deixa confirmar uma data passada
+        document.getElementById('btnDateNext').addEventListener('click', () => {
+            const dataSelecionada = new Date(selYear, selMonth, selDay);
+            const dataHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+            if (selYear === ANO_FIXO && dataSelecionada < dataHoje) {
+                alert('Escolha uma data a partir de hoje. ❤️');
+                selDay = diaAtual;
+                selMonth = mesAtual;
+                rebuildDayWheel();
+                montarMesesDisponiveis();
+                return;
+            }
+
+            goToStep(2);
+        });
 
         // ---------- relógio com ponteiros arrastáveis ----------
         const svg = document.getElementById('clockSvg');
