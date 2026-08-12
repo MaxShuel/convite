@@ -650,9 +650,17 @@
         const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const ITEM_H = 44;
 
-        let selDay = hoje.getDate();
-        let selMonth = hoje.getMonth(); // 0-11
-        let selYear = hoje.getFullYear();
+        // Ano continua fixo em 2026
+        const ANO_FIXO = 2026;
+
+        // Data atual do sistema
+        const mesAtual = hoje.getMonth(); // 0 = Janeiro
+        const diaAtual = hoje.getDate();
+
+        // Seleção inicial começa no dia de hoje
+        let selDay = diaAtual;
+        let selMonth = mesAtual;
+        let selYear = ANO_FIXO;
 
         function diasNoMes(mesIndex, ano) {
             return new Date(ano, mesIndex + 1, 0).getDate();
@@ -660,7 +668,9 @@
 
         function montarWheel(container, items, selectedIndex, onChange) {
             container.innerHTML = '';
-            const padTop = document.createElement('div'); padTop.className = 'wheel-pad';
+
+            const padTop = document.createElement('div');
+            padTop.className = 'wheel-pad';
             container.appendChild(padTop);
 
             items.forEach((label) => {
@@ -670,20 +680,29 @@
                 container.appendChild(it);
             });
 
-            const padBottom = document.createElement('div'); padBottom.className = 'wheel-pad';
+            const padBottom = document.createElement('div');
+            padBottom.className = 'wheel-pad';
             container.appendChild(padBottom);
 
             // posiciona no item selecionado
             container.scrollTop = selectedIndex * ITEM_H;
 
             let scrollTimeout;
+
             container.addEventListener('scroll', () => {
                 clearTimeout(scrollTimeout);
+
                 updateCenter(container);
+
                 scrollTimeout = setTimeout(() => {
                     const idx = Math.round(container.scrollTop / ITEM_H);
                     const clamped = Math.max(0, Math.min(items.length - 1, idx));
-                    container.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
+
+                    container.scrollTo({
+                        top: clamped * ITEM_H,
+                        behavior: 'smooth'
+                    });
+
                     onChange(clamped);
                     updateCenter(container);
                 }, 120);
@@ -695,24 +714,84 @@
         function updateCenter(container) {
             const idx = Math.round(container.scrollTop / ITEM_H);
             const nodes = container.querySelectorAll('.wheel-item');
-            nodes.forEach((n, i) => n.classList.toggle('center', i === idx));
+
+            nodes.forEach((n, i) => {
+                n.classList.toggle('center', i === idx);
+            });
         }
 
         const wheelDayEl = document.getElementById('wheelDay');
         const wheelMonthEl = document.getElementById('wheelMonth');
         const wheelYearEl = document.getElementById('wheelYear');
 
-        const anos = [2026];
+        const anos = [ANO_FIXO];
+
+        function montarMesesDisponiveis() {
+            // Mostra somente o mês atual em diante
+            const mesesDisponiveis = MESES.slice(mesAtual);
+
+            montarWheel(
+                wheelMonthEl,
+                mesesDisponiveis,
+                selMonth - mesAtual,
+                (i) => {
+                    selMonth = mesAtual + i;
+
+                    // No mês atual, não permite dias anteriores a hoje.
+                    // Nos meses futuros, a seleção pode começar no dia 1.
+                    if (selMonth === mesAtual && selDay < diaAtual) {
+                        selDay = diaAtual;
+                    }
+
+                    rebuildDayWheel();
+                }
+            );
+        }
 
         function rebuildDayWheel() {
             const max = diasNoMes(selMonth, selYear);
-            if (selDay > max) selDay = max;
-            const dias = Array.from({ length: max }, (_, i) => String(i + 1));
-            montarWheel(wheelDayEl, dias, selDay - 1, (i) => { selDay = i + 1; });
+
+            // Mês atual: começa no dia de hoje.
+            // Meses futuros: começam no dia 1.
+            const primeiroDia = selMonth === mesAtual ? diaAtual : 1;
+
+            // Garante que o dia selecionado nunca fique antes do permitido.
+            if (selDay < primeiroDia) {
+                selDay = primeiroDia;
+            }
+
+            // Garante que não passe do último dia do mês.
+            if (selDay > max) {
+                selDay = max;
+            }
+
+            const dias = Array.from(
+                { length: max - primeiroDia + 1 },
+                (_, i) => String(primeiroDia + i)
+            );
+
+            montarWheel(
+                wheelDayEl,
+                dias,
+                selDay - primeiroDia,
+                (i) => {
+                    selDay = primeiroDia + i;
+                }
+            );
         }
 
-        montarWheel(wheelMonthEl, MESES, selMonth, (i) => { selMonth = i; rebuildDayWheel(); });
-        montarWheel(wheelYearEl, anos.map(String), 0, (i) => { selYear = anos[i]; rebuildDayWheel(); });
+        montarMesesDisponiveis();
+
+        montarWheel(
+            wheelYearEl,
+            anos.map(String),
+            0,
+            (i) => {
+                selYear = anos[i];
+                rebuildDayWheel();
+            }
+        );
+
         rebuildDayWheel();
 
         document.getElementById('btnDateNext').addEventListener('click', () => goToStep(2));
