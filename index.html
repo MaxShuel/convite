@@ -650,6 +650,9 @@ const hoje = new Date();
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const ITEM_H = 44;
 
+// Ano fixo
+const ANO_FIXO = 2026;
+
 // Data mínima: hoje
 const mesMinimo = hoje.getMonth();
 const diaMinimo = hoje.getDate();
@@ -660,6 +663,9 @@ let selYear = ANO_FIXO;
 
 // Somente meses a partir do mês atual
 const mesesDisponiveis = MESES.slice(mesMinimo);
+
+// Somente o ano 2026
+const anos = [ANO_FIXO];
 
         function diasNoMes(mesIndex, ano) {
             return new Date(ano, mesIndex + 1, 0).getDate();
@@ -711,7 +717,7 @@ const mesesDisponiveis = MESES.slice(mesMinimo);
 
         const anos = [2026];
 
-        function rebuildDayWheel() {
+function rebuildDayWheel() {
     const max = diasNoMes(selMonth, selYear);
 
     // Se for o mês atual, começa no dia de hoje.
@@ -755,6 +761,21 @@ montarWheel(
         }
 
         rebuildDayWheel();
+    }
+);
+
+// Ano fixo em 2026
+montarWheel(
+    wheelYearEl,
+    anos.map(String),
+    0,
+    () => {
+        selYear = ANO_FIXO;
+        rebuildDayWheel();
+    }
+);
+
+rebuildDayWheel();
     }
 );
 
