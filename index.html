@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Vamos sair?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+        :root {
+            --paper: #fff3e9;
+            --wine: #6b1e3c;
+            --rose-red: #8c1032;
+            --rose-red-dark: #5c0a22;
+            --peach: #ff9e80;
+            --gold: #c9a15a;
+            --ink: #3a1f2b;
+            --blush-bg: #f3d9de;
+            --blush-bg-2: #e9d6f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: 'Outfit', sans-serif;
+            color: var(--ink);
+            background: radial-gradient(circle at 20% 15%, var(--blush-bg-2), transparent 55%),
+                radial-gradient(circle at 80% 85%, var(--blush-bg), transparent 55%),
+                #fbe9ec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* corações ambiente, discretos */
+        .floaties {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floaties span {
+            position: absolute;
+            bottom: -40px;
+            font-size: 18px;
+            opacity: .35;
+            animation: floatUp linear infinite;
+            color: var(--peach);
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-115vh) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            background: var(--paper);
+            border-radius: 28px;
+            padding: 38px 30px 30px;
+            box-shadow: 0 30px 60px -20px rgba(107, 30, 60, 0.35), 0 2px 0 rgba(255, 255, 255, 0.6) inset;
+            overflow: hidden;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(201, 161, 90, 0.35);
+            border-radius: 28px;
+            margin: 10px;
+            pointer-events: none;
+        }
+
+        .seal {
+            position: absolute;
+            top: -16px;
+            right: 22px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(160deg, var(--wine), #8c2a52);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--paper);
+            box-shadow: 0 6px 14px rgba(107, 30, 60, 0.4);
+        }
+
+        .progress {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
+
+        .progress i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(107, 30, 60, 0.18);
+            transition: background .3s, transform .3s;
+        }
+
+        .progress i.active {
+            background: var(--wine);
+            transform: scale(1.25);
+        }
+
+        .step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            animation: fadeSlide .45s ease;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateX(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step[hidden] {
+            display: none;
+        }
+
+        .rose-icon {
+            display: block;
+            margin: 0 auto 4px;
+        }
+
+        .eyebrow {
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+            font-size: clamp(24px, 6.5vw, 29px);
+            color: var(--rose-red-dark);
+            text-align: center;
+            margin: 0;
+            letter-spacing: .02em;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+            font-size: clamp(40px, 10vw, 52px);
+            color: var(--wine);
+            margin: 0 0 6px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .sub {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(58, 31, 43, 0.65);
+            margin: 0 0 30px;
+        }
+
+        /* ===== Botões pergunta inicial ===== */
+        .ask-actions {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            min-height: 140px;
+        }
+
+        .btn {
+            border: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 14px 30px;
+            border-radius: 999px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn:active {
+            transform: scale(.96);
+        }
+
+        .btn-yes {
+            background: linear-gradient(160deg, var(--wine), #8c2a52);
+            color: var(--paper);
+            box-shadow: 0 10px 22px -8px rgba(107, 30, 60, 0.55);
+        }
+
+        .btn-yes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px -8px rgba(107, 30, 60, 0.6);
+        }
+
+        .btn-no {
+            background: transparent;
+            color: var(--wine);
+            border: 1.5px solid rgba(107, 30, 60, 0.35);
+            position: absolute;
+        }
+
+        .no-hint {
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(58, 31, 43, 0.45);
+            opacity: 0;
+            transition: opacity .3s;
+            white-space: nowrap;
+        }
+
+        .no-hint.show {
+            opacity: 1;
+        }
+
+        /* ===== Wheel picker (data) ===== */
+        .wheels {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 6px 0 24px;
+            position: relative;
+        }
+
+        .wheel {
+            position: relative;
+            width: 84px;
+            height: 150px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 32%, black 68%, transparent);
+            mask-image: linear-gradient(to bottom, transparent, black 32%, black 68%, transparent);
+        }
+
+        .wheel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .wheel-pad {
+            height: 53px;
+        }
+
+        .wheel-item {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: center;
+            font-size: 17px;
+            color: rgba(58, 31, 43, 0.35);
+            transition: color .15s, font-size .15s;
+        }
+
+        .wheel-item.center {
+            color: var(--wine);
+            font-weight: 700;
+            font-size: 21px;
+        }
+
+        .wheel-frame {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 53px;
+            height: 44px;
+            border-top: 1.5px solid rgba(201, 161, 90, 0.5);
+            border-bottom: 1.5px solid rgba(201, 161, 90, 0.5);
+            pointer-events: none;
+        }
+
+        .wheels-labels {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .wheels-labels span {
+            width: 84px;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(58, 31, 43, 0.5);
+        }
+
+        /* ===== Relógio ===== */
+        .clock-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 4px 0 20px;
+        }
+
+        .clock-time {
+            font-family: 'Outfit';
+            font-weight: 700;
+            font-size: 30px;
+            color: var(--wine);
+            margin-top: 14px;
+            letter-spacing: .02em;
+        }
+
+        .clock-sub {
+            font-size: 12px;
+            color: rgba(58, 31, 43, 0.5);
+            margin-top: 2px;
+        }
+
+        svg {
+            touch-action: none;
+        }
+
+        .hand {
+            cursor: grab;
+        }
+
+        .hand:active {
+            cursor: grabbing;
+        }
+
+        /* ===== Confirmação ===== */
+        .done {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .done .summary {
+            background: rgba(201, 161, 90, 0.12);
+            border: 1px dashed rgba(201, 161, 90, 0.5);
+            border-radius: 16px;
+            padding: 14px 20px;
+            margin: 4px 0 26px;
+            font-size: 15px;
+            color: var(--ink);
+        }
+
+        .done .summary b {
+            color: var(--wine);
+        }
+
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(160deg, var(--wine), #8c2a52);
+            color: var(--paper);
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            padding: 14px 26px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 10px 22px -8px rgba(107, 30, 60, 0.55);
+            transition: transform .15s ease, opacity .3s ease;
+        }
+
+        .wa-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .wa-btn.loading {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .6;
+            }
+        }
+
+        .redirect-msg {
+            font-family: 'Caveat', cursive;
+            font-size: 18px;
+            color: var(--wine);
+            margin-top: 14px;
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+
+        .redirect-msg.show {
+            opacity: 1;
+        }
+
+        .continue-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 6px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .floaties {
+                display: none;
+            }
+
+            .step {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stage">
+        <div class="floaties" id="floaties"></div>
+
+        <div class="card">
+            <div class="seal">🌹</div>
+            <div class="progress">
+                <i class="p0 active"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i>
+            </div>
+
+            <!-- STEP 1: pergunta -->
+            <div class="step" id="step-ask">
+                <svg class="rose-icon" viewBox="0 0 60 64" width="52" height="55">
+                    <!-- caule e folhas -->
+                    <path d="M30 40 C29 48 28 54 25 60" fill="none" stroke="#7a9d5c" stroke-width="1.6"
+                        stroke-linecap="round" />
+                    <path d="M27 50 C22 49 18 51 15 55 C19 56 23 55 27 50 Z" fill="#a8c98a" stroke="#7a9d5c"
+                        stroke-width="0.8" />
+                    <path d="M28 55 C24 57 21 60 20 63 C24 63 27 61 28 55 Z" fill="#94bd76" stroke="#7a9d5c"
+                        stroke-width="0.8" />
+
+                    <!-- pétalas externas -->
+                    <g fill="var(--rose-red)" stroke="var(--rose-red-dark)" stroke-width="0.6">
+                        <path d="M30 30 C19 29 14 20 20 12 C24 7 30 8 31 15 C32 21 28 27 30 30 Z"
+                            transform="rotate(0 30 26)" />
+                        <path d="M30 30 C19 29 14 20 20 12 C24 7 30 8 31 15 C32 21 28 27 30 30 Z"
+                            transform="rotate(72 30 26)" />
+                        <path d="M30 30 C19 29 14 20 20 12 C24 7 30 8 31 15 C32 21 28 27 30 30 Z"
+                            transform="rotate(144 30 26)" />
+                        <path d="M30 30 C19 29 14 20 20 12 C24 7 30 8 31 15 C32 21 28 27 30 30 Z"
+                            transform="rotate(216 30 26)" />
+                        <path d="M30 30 C19 29 14 20 20 12 C24 7 30 8 31 15 C32 21 28 27 30 30 Z"
+                            transform="rotate(288 30 26)" />
+                    </g>
+
+                    <!-- pétalas internas, mais escuras, criam profundidade -->
+                    <g fill="var(--rose-red-dark)" stroke="var(--rose-red-dark)" stroke-width="0.4" opacity="0.9">
+                        <path d="M30 27 C24 26 21 21 24 17 C26 14 30 15 30 19 C31 22 29 25 30 27 Z"
+                            transform="rotate(20 30 24)" />
+                        <path d="M30 27 C24 26 21 21 24 17 C26 14 30 15 30 19 C31 22 29 25 30 27 Z"
+                            transform="rotate(92 30 24)" />
+                        <path d="M30 27 C24 26 21 21 24 17 C26 14 30 15 30 19 C31 22 29 25 30 27 Z"
+                            transform="rotate(164 30 24)" />
+                        <path d="M30 27 C24 26 21 21 24 17 C26 14 30 15 30 19 C31 22 29 25 30 27 Z"
+                            transform="rotate(236 30 24)" />
+                        <path d="M30 27 C24 26 21 21 24 17 C26 14 30 15 30 19 C31 22 29 25 30 27 Z"
+                            transform="rotate(308 30 24)" />
+                    </g>
+
+                    <!-- miolo -->
+                    <circle cx="30" cy="23" r="3.4" fill="var(--gold)" opacity="0.9" />
+                </svg>
+                <p class="eyebrow" id="nomeDela">Rosa,</p>
+                <h1>vamos sair?</h1>
+                <p class="sub">😊</p>
+                <div class="ask-actions" id="askActions">
+                    <button class="btn btn-yes" id="btnYes">Sim!</button>
+                    <button class="btn btn-no" id="btnNo">Não</button>
+                    <span class="no-hint" id="noHint">essa opção não existe 😏</span>
+                </div>
+            </div>
+
+            <!-- STEP 2: data -->
+            <div class="step" id="step-date" hidden>
+                <h1 style="font-size:34px;">Que dia?</h1>
+                <p class="sub">escolhe a data pra gente marcar</p>
+
+                <div class="wheels-labels"><span>Dia</span><span>Mês</span><span>Ano</span></div>
+                <div class="wheels">
+                    <div class="wheel-frame"></div>
+                    <div class="wheel" id="wheelDay"></div>
+                    <div class="wheel" id="wheelMonth"></div>
+                    <div class="wheel" id="wheelYear"></div>
+                </div>
+
+                <div class="continue-row">
+                    <button class="btn btn-yes" id="btnDateNext">Confirmar data</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: hora -->
+            <div class="step" id="step-time" hidden>
+                <h1 style="font-size:34px;">Que horas?</h1>
+                <p class="sub">arrasta os ponteiros do relógio</p>
+
+                <div class="clock-wrap">
+                    <svg viewBox="0 0 240 240" width="220" height="220" id="clockSvg">
+                        <circle cx="120" cy="120" r="108" fill="#ffffff" stroke="var(--gold)" stroke-width="2" />
+                        <g id="ticks"></g>
+                        <text x="120" y="38" text-anchor="middle" font-family="Outfit" font-size="16" font-weight="600"
+                            fill="var(--wine)">12</text>
+                        <text x="206" y="126" text-anchor="middle" font-family="Outfit" font-size="16" font-weight="600"
+                            fill="var(--wine)">3</text>
+                        <text x="120" y="214" text-anchor="middle" font-family="Outfit" font-size="16" font-weight="600"
+                            fill="var(--wine)">6</text>
+                        <text x="34" y="126" text-anchor="middle" font-family="Outfit" font-size="16" font-weight="600"
+                            fill="var(--wine)">9</text>
+
+                        <line id="hourHand" class="hand" x1="120" y1="120" x2="120" y2="76" stroke="var(--wine)"
+                            stroke-width="6" stroke-linecap="round" />
+                        <line id="minuteHand" class="hand" x1="120" y1="120" x2="120" y2="50" stroke="var(--peach)"
+                            stroke-width="4" stroke-linecap="round" />
+                        <circle cx="120" cy="120" r="5.5" fill="var(--gold)" />
+                    </svg>
+                    <div class="clock-time" id="clockTime">10:00</div>
+                    <div class="clock-sub">arraste o ponteiro rosa (minutos) e o vinho (hora)</div>
+                </div>
+
+                <div class="continue-row">
+                    <button class="btn btn-yes" id="btnTimeNext">Confirmar horário</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: fim -->
+            <div class="step" id="step-done" hidden>
+                <div class="done">
+                    <h1>Está marcado!</h1>
+                    <div class="summary" id="summaryText"></div>
+                    <button class="wa-btn" id="btnContinuar">Continuar</button>
+                    <p class="redirect-msg" id="redirectMsg">te levando pra lá&nbsp;🌹</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           CONFIGURAÇÃO — troque aqui, sem mexer no resto do código
+           ========================================================= */
+        const CONFIG = {
+            // nome dela, aparece na primeira tela
+            nome: "Rosa",
+            // número dela com DDI + DDD, só números (ex: 55 + DDD + número)
+            whatsappNumber: "5511947655825",
+            // mensagem final enviada pro WhatsApp (usa {data} e {hora})
+            mensagem: (data, hora) => `Oi! 📌 Ficou combinado: ${data} às ${hora}. 😊`
+        };
+        /* ========================================================= */
+
+        document.getElementById('nomeDela').textContent = CONFIG.nome + ',';
+
+        // ---------- corações flutuando ao fundo ----------
+        const floaties = document.getElementById('floaties');
+        for (let i = 0; i < 10; i++) {
+            const s = document.createElement('span');
+            s.textContent = Math.random() > 0.5 ? '♥' : '✦';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.fontSize = (12 + Math.random() * 14) + 'px';
+            s.style.animationDuration = (10 + Math.random() * 10) + 's';
+            s.style.animationDelay = (Math.random() * 10) + 's';
+            floaties.appendChild(s);
+        }
+
+        // ---------- navegação entre steps ----------
+        const steps = ['step-ask', 'step-date', 'step-time', 'step-done'];
+        const dots = document.querySelectorAll('.progress i');
+        function goToStep(index) {
+            steps.forEach((id, i) => {
+                document.getElementById(id).hidden = i !== index;
+            });
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        }
+
+        // ---------- botão "Não" foge ----------
+        const askActions = document.getElementById('askActions');
+        const btnNo = document.getElementById('btnNo');
+        const noHint = document.getElementById('noHint');
+        let noAttempts = 0;
+
+        function fugirBotaoNao() {
+            const areaW = askActions.clientWidth;
+            const areaH = askActions.clientHeight;
+            const btnW = btnNo.offsetWidth;
+            const btnH = btnNo.offsetHeight;
+            const maxX = Math.max(10, areaW - btnW - 10);
+            const maxY = Math.max(10, areaH - btnH - 10);
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            btnNo.style.left = x + 'px';
+            btnNo.style.top = y + 'px';
+
+            noAttempts++;
+            if (noAttempts >= 2) { noHint.classList.add('show'); }
+        }
+        btnNo.addEventListener('pointerenter', fugirBotaoNao);
+        btnNo.addEventListener('pointerdown', (e) => { e.preventDefault(); fugirBotaoNao(); });
+        btnNo.addEventListener('click', (e) => { e.preventDefault(); fugirBotaoNao(); });
+        // posição inicial já deslocada um pouco
+        setTimeout(fugirBotaoNao, 300);
+
+        document.getElementById('btnYes').addEventListener('click', () => goToStep(1));
+
+        // ---------- wheel picker de data ----------
+        const hoje = new Date();
+        const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const ITEM_H = 44;
+
+        let selDay = hoje.getDate();
+        let selMonth = hoje.getMonth(); // 0-11
+        let selYear = hoje.getFullYear();
+
+        function diasNoMes(mesIndex, ano) {
+            return new Date(ano, mesIndex + 1, 0).getDate();
+        }
+
+        function montarWheel(container, items, selectedIndex, onChange) {
+            container.innerHTML = '';
+            const padTop = document.createElement('div'); padTop.className = 'wheel-pad';
+            container.appendChild(padTop);
+
+            items.forEach((label) => {
+                const it = document.createElement('div');
+                it.className = 'wheel-item';
+                it.textContent = label;
+                container.appendChild(it);
+            });
+
+            const padBottom = document.createElement('div'); padBottom.className = 'wheel-pad';
+            container.appendChild(padBottom);
+
+            // posiciona no item selecionado
+            container.scrollTop = selectedIndex * ITEM_H;
+
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                updateCenter(container);
+                scrollTimeout = setTimeout(() => {
+                    const idx = Math.round(container.scrollTop / ITEM_H);
+                    const clamped = Math.max(0, Math.min(items.length - 1, idx));
+                    container.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
+                    onChange(clamped);
+                    updateCenter(container);
+                }, 120);
+            });
+
+            updateCenter(container);
+        }
+
+        function updateCenter(container) {
+            const idx = Math.round(container.scrollTop / ITEM_H);
+            const nodes = container.querySelectorAll('.wheel-item');
+            nodes.forEach((n, i) => n.classList.toggle('center', i === idx));
+        }
+
+        const wheelDayEl = document.getElementById('wheelDay');
+        const wheelMonthEl = document.getElementById('wheelMonth');
+        const wheelYearEl = document.getElementById('wheelYear');
+
+        const anos = [hoje.getFullYear(), hoje.getFullYear() + 1, hoje.getFullYear() + 2];
+
+        function rebuildDayWheel() {
+            const max = diasNoMes(selMonth, selYear);
+            if (selDay > max) selDay = max;
+            const dias = Array.from({ length: max }, (_, i) => String(i + 1));
+            montarWheel(wheelDayEl, dias, selDay - 1, (i) => { selDay = i + 1; });
+        }
+
+        montarWheel(wheelMonthEl, MESES, selMonth, (i) => { selMonth = i; rebuildDayWheel(); });
+        montarWheel(wheelYearEl, anos.map(String), 0, (i) => { selYear = anos[i]; rebuildDayWheel(); });
+        rebuildDayWheel();
+
+        document.getElementById('btnDateNext').addEventListener('click', () => goToStep(2));
+
+        // ---------- relógio com ponteiros arrastáveis ----------
+        const svg = document.getElementById('clockSvg');
+        const hourHand = document.getElementById('hourHand');
+        const minuteHand = document.getElementById('minuteHand');
+        const clockTimeEl = document.getElementById('clockTime');
+        const ticksG = document.getElementById('ticks');
+
+        for (let i = 0; i < 12; i++) {
+            const ang = (i * 30) * Math.PI / 180;
+            const x1 = 120 + 95 * Math.sin(ang), y1 = 120 - 95 * Math.cos(ang);
+            const x2 = 120 + 104 * Math.sin(ang), y2 = 120 - 104 * Math.cos(ang);
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+            line.setAttribute('stroke', 'var(--gold)');
+            line.setAttribute('stroke-width', i % 3 === 0 ? 2.5 : 1.2);
+            ticksG.appendChild(line);
+        }
+
+        let selHour = 10, selMinute = 0;
+
+        function drawHands() {
+            const hourAngle = (selHour % 12) * 30 + selMinute * 0.5; // hora avança suave com os minutos
+            const minAngle = selMinute * 6;
+            setHand(hourHand, hourAngle, 46);
+            setHand(minuteHand, minAngle, 70);
+            const hh = String(selHour).padStart(2, '0');
+            const mm = String(selMinute).padStart(2, '0');
+            clockTimeEl.textContent = `${hh}:${mm}`;
+        }
+        function setHand(el, angleDeg, length) {
+            const rad = (angleDeg - 0) * Math.PI / 180;
+            const x2 = 120 + length * Math.sin(rad);
+            const y2 = 120 - length * Math.cos(rad);
+            el.setAttribute('x2', x2);
+            el.setAttribute('y2', y2);
+        }
+        drawHands();
+
+        function anguloDoPonteiro(clientX, clientY) {
+            const rect = svg.getBoundingClientRect();
+            const scale = 240 / rect.width; // viewBox 240 vs tamanho real
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (clientX - cx);
+            const dy = (clientY - cy);
+            let deg = Math.atan2(dx, -dy) * 180 / Math.PI;
+            if (deg < 0) deg += 360;
+            return deg;
+        }
+
+        function ativarArraste(el, tipo) {
+            el.addEventListener('pointerdown', (e) => {
+                el.setPointerCapture(e.pointerId);
+                mover(e);
+                function mover(ev) {
+                    const deg = anguloDoPonteiro(ev.clientX, ev.clientY);
+                    if (tipo === 'hora') {
+                        selHour = Math.round(deg / 30) % 12;
+                        if (selHour === 0) selHour = 12 === selHour ? 0 : selHour;
+                        selHour = Math.round(deg / 30) % 12;
+                    } else {
+                        selMinute = Math.round(deg / 6) % 60;
+                        // arredonda pra múltiplos de 5 min, fica mais fácil de acertar
+                        selMinute = Math.round(selMinute / 5) * 5 % 60;
+                    }
+                    drawHands();
+                }
+                function onMove(ev) { mover(ev); }
+                function onUp(ev) {
+                    el.releasePointerCapture(e.pointerId);
+                    el.removeEventListener('pointermove', onMove);
+                    el.removeEventListener('pointerup', onUp);
+                }
+                el.addEventListener('pointermove', onMove);
+                el.addEventListener('pointerup', onUp);
+            });
+        }
+        ativarArraste(hourHand, 'hora');
+        ativarArraste(minuteHand, 'minuto');
+
+        document.getElementById('btnTimeNext').addEventListener('click', () => {
+            montarResumoFinal();
+            goToStep(3);
+            dispararConfete();
+        });
+
+        // ---------- resumo final + link WhatsApp ----------
+        function montarResumoFinal() {
+            const dataFormatada = `${String(selDay).padStart(2, '0')}/${String(selMonth + 1).padStart(2, '0')}/${selYear}`;
+            const horaFormatada = `${String(selHour === 0 ? 12 : selHour).padStart(2, '0')}:${String(selMinute).padStart(2, '0')}`;
+
+            document.getElementById('summaryText').innerHTML =
+                `<b>${dataFormatada}</b><br>às <b>${horaFormatada}</b>`;
+
+            const msg = CONFIG.mensagem(dataFormatada, horaFormatada);
+            window.__waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+        }
+
+        document.getElementById('btnContinuar').addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            if (btn.disabled) return;
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Só um instante...';
+            document.getElementById('redirectMsg').classList.add('show');
+
+            setTimeout(() => {
+                window.location.href = window.__waUrl;
+            }, 1400);
+        });
+
+        function dispararConfete() {
+            for (let i = 0; i < 16; i++) {
+                const s = document.createElement('span');
+                s.textContent = '♥';
+                s.style.left = (40 + Math.random() * 20) + '%';
+                s.style.bottom = '30%';
+                s.style.fontSize = (14 + Math.random() * 16) + 'px';
+                s.style.animationDuration = (2 + Math.random() * 2) + 's';
+                s.style.animationDelay = (Math.random() * 0.6) + 's';
+                s.style.opacity = '.8';
+                floaties.appendChild(s);
+                setTimeout(() => s.remove(), 4500);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
